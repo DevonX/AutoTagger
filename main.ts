@@ -64,21 +64,19 @@ class ExampleSettingTab extends PluginSettingTab {
 				.setPlaceholder('Tag name here')
 				.setValue(''));
 
-		const addButton = new ButtonComponent(inputContainer)
+		new ButtonComponent(inputContainer)
 			.setButtonText('Add Tag')
 			.onClick(() => {
 				const tagNameInputValue = tagNameInput.settingEl.querySelector('input');
 
 				tagNameInputValue?.value; // Add null check with optional chaining operator
-
+				if (tagNameInputValue?.value) {
+					this.plugin.settings.tags.push(tagNameInputValue.value);
+					tagNameInputValue.value = '';
+					this.displayTags(); // Call the displayTags method to update the tag list
+					this.plugin.saveSettings();
+				}
 			});
-
-			addButton.buttonEl.classList.add("addButton");
-
-			// Create a list to hold the input from the input field
-			this.tagList = containerEl.createEl('ul', {cls: "tagList"});
-			//display the tags
-			this.displayTags();
 			
 		}
 
