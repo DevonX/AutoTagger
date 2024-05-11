@@ -1,8 +1,24 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+.your-button-css-class {
+    /* Add your styles here */
+    width: 70px;
+    height: 70px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: var(--size-4-1);
+    background-color: yellow; /* Change the color to yellow */
+    margin-bottom: 40px; /* Add a margin of 20px to the bottom */
+    margin-right: 20px;
+    border-radius: 50%; /* Make the button round */
+    /* Add these lines to center the text */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 50%;
+    z-index: 10;
+}
+.your-button-css-class > svg {
+    --custom-button-plus-sign-size: 30px;
+    width: var(--custom-button-plus-sign-size);
+    height: var(--custom-button-plus-sign-size);
+}
