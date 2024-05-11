@@ -1,4 +1,4 @@
-import { Plugin, App, Setting, PluginSettingTab, ButtonComponent } from 'obsidian';
+import { Plugin, App, Setting, PluginSettingTab, ButtonComponent, TextComponent } from 'obsidian';
 
 class ExamplePluginSettings {
 	dateFormat: string;
@@ -30,54 +30,59 @@ export default class examplePlugin extends Plugin {
 }
 
 class ExampleSettingTab extends PluginSettingTab {
-	plugin: examplePlugin;
-	tagList: HTMLUListElement;
-	displayTags() {
-		this.tagList.empty();
-		this.plugin.settings.tags.forEach(tag => {
-			const tagItem = this.tagList.createEl('li', {text: tag});
-			const deleteButton = tagItem.createEl('button', {text: 'Delete'});
-			deleteButton.addEventListener('click', () => {
-				this.plugin.settings.tags = this.plugin.settings.tags.filter(t => t !== tag);
-				this.displayTags();
-				this.plugin.saveSettings();
-			});
-		});
-	}
+    plugin: examplePlugin;
+    tagList: HTMLUListElement;
+    
+    constructor(app: App, plugin: examplePlugin) {
+        super(app, plugin);
+        this.plugin = plugin;
+    }
 
-	constructor(app: App, plugin: examplePlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
+    display(): void {
+        const { containerEl } = this;
 
-	display(): void {
-		const { containerEl } = this;
+        containerEl.empty();
 
-		containerEl.empty();
+        const inputContainer = containerEl.createEl('div', {cls: "inputContainer"});
 
-		const inputContainer = containerEl.createEl('div', {cls: "inputContainer"});
+        let tagNameTextComponent: TextComponent;
 
-		const tagNameInput = new Setting(inputContainer)
-			.setName('Tag name')
-			.setDesc('Enter a tag name here')
-			.addText(text => text
-				.setPlaceholder('Tag name here')
-				.setValue(''));
+        new Setting(inputContainer)
+            .setName('Tag name')
+            .setDesc('Enter a tag name here')
+            .addText(text => {
+                text.setPlaceholder('Tag name here')
+                    .setValue('');
+                tagNameTextComponent = text;
+            });
 
-		new ButtonComponent(inputContainer)
-			.setButtonText('Add Tag')
-			.onClick(() => {
-				const tagNameInputValue = tagNameInput.settingEl.querySelector('input');
+        new ButtonComponent(inputContainer)
+            .setButtonText('Add Tag')
+            .onClick(() => {
+                const tagNameInputValue = tagNameTextComponent.getValue();
 
-				tagNameInputValue?.value; // Add null check with optional chaining operator
-				if (tagNameInputValue?.value) {
-					this.plugin.settings.tags.push(tagNameInputValue.value);
-					tagNameInputValue.value = '';
-					this.displayTags(); // Call the displayTags method to update the tag list
-					this.plugin.saveSettings();
-				}
-			});
-			
-		}
+                if (tagNameInputValue) {
+                    this.plugin.settings.tags.push(tagNameInputValue);
+                    tagNameTextComponent.setValue('');
+                    this.displayTags(); // Call the displayTags method to update the tag list
+                    this.plugin.saveSettings();
+                }
+            });
 
+        this.tagList = containerEl.createEl('ul');
+        this.displayTags();
+    }
+
+    displayTags() {
+        this.tagList.empty();
+        this.plugin.settings.tags.forEach(tag => {
+            const tagItem = this.tagList.createEl('li', {text: tag});
+            const deleteButton = tagItem.createEl('button', {text: 'Delete'});
+            deleteButton.addEventListener('click', () => {
+                this.plugin.settings.tags = this.plugin.settings.tags.filter(t => t !== tag);
+                this.displayTags();
+                this.plugin.saveSettings();
+            });
+        });
+    }
 }
