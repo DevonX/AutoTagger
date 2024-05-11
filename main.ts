@@ -36,9 +36,11 @@ class ExampleSettingTab extends PluginSettingTab {
     constructor(app: App, plugin: examplePlugin) {
         super(app, plugin);
         this.plugin = plugin;
+		console.log('ExampleSettingTab constructor:', app, plugin);
     }
 
     display(): void {
+		console.log('Display called');
         const { containerEl } = this;
 
         containerEl.empty();
@@ -54,12 +56,14 @@ class ExampleSettingTab extends PluginSettingTab {
                 text.setPlaceholder('Tag name here')
                     .setValue('');
                 tagNameTextComponent = text;
+				console.log('tagNameTextComponent:', tagNameTextComponent);
             });
 
         new ButtonComponent(inputContainer)
             .setButtonText('Add Tag')
             .onClick(() => {
                 const tagNameInputValue = tagNameTextComponent.getValue();
+				console.log('onClick:', tagNameInputValue, this.plugin.settings.tags);
 
                 if (tagNameInputValue) {
                     this.plugin.settings.tags.push(tagNameInputValue);
@@ -74,14 +78,26 @@ class ExampleSettingTab extends PluginSettingTab {
     }
 
     displayTags() {
+		console.log('displayTags called');
         this.tagList.empty();
+		console.log('tagList after empty:', this.tagList);
+
+		if (!this.plugin.settings.tags) {
+			this.plugin.settings.tags = [];
+		}
+
         this.plugin.settings.tags.forEach(tag => {
-            const tagItem = this.tagList.createEl('li', {text: tag});
-            const deleteButton = tagItem.createEl('button', {text: 'Delete'});
-            deleteButton.addEventListener('click', () => {
-                this.plugin.settings.tags = this.plugin.settings.tags.filter(t => t !== tag);
-                this.displayTags();
-                this.plugin.saveSettings();
+			console.log('Current tag:', tag);
+            const tagItem = this.tagList.createEl('li', {text: tag, cls: 'listMargin'});
+            const deleteButton = tagItem.createEl('button', {cls: 'removeButton'});
+
+			new ButtonComponent(deleteButton)
+				.setButtonText('Delete')
+				.onClick(() => {
+					this.plugin.settings.tags = this.plugin.settings.tags.filter(t => t !== tag);
+					console.log('Tags after deletion:', this.plugin.settings.tags);
+					this.displayTags();
+					this.plugin.saveSettings();
             });
         });
     }

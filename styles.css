@@ -31,3 +31,10 @@
 .addButton {
     margin-left: 10px;
 }
+.removeButton {
+    position: absolute;
+    right: calc(20px);
+}
+.listMargin {
+    margin-top: 20px;
+}
