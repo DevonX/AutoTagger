@@ -22,3 +22,12 @@
     width: var(--custom-button-plus-sign-size);
     height: var(--custom-button-plus-sign-size);
 }
+.inputContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+.addButton {
+    margin-left: 10px;
+}
