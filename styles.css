@@ -39,3 +39,20 @@
 .listMargin {
     margin-top: 20px;
 }
+.suggestion-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1;
+    background-color: #777;
+    list-style-type: none;
+    padding: 0;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+}
+.suggestion-item:hover {
+    background-color: #000;
+}
