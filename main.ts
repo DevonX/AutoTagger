@@ -1,16 +1,13 @@
 import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal} from 'obsidian';
-
 class ExamplePluginSettings {
-    dateFormat: string;
     tags: string[] = [];
 }
-
 export default class examplePlugin extends Plugin {
     settings: ExamplePluginSettings;
 
     async onload() {
         // Load settings
-        this.settings = Object.assign({}, await this.loadData(), { dateFormat: 'defaultFormat' });
+        this.settings = Object.assign({}, await this.loadData());
         this.addSettingTab(new ExampleSettingTab(this.app, this));
 
         // Add button to the app container
@@ -29,7 +26,6 @@ export default class examplePlugin extends Plugin {
         await this.saveData(this.settings);
     }
 }
-
 class TagSuggestModal extends SuggestModal<string> {
     private suggestions: string[];
     private onSelect: (value: string) => void;
@@ -51,7 +47,6 @@ class TagSuggestModal extends SuggestModal<string> {
         this.onSelect(suggestion);
     }
 }
-
 class ExampleSettingTab extends PluginSettingTab {
     plugin: examplePlugin;
     tagList: HTMLElement;
@@ -61,22 +56,42 @@ class ExampleSettingTab extends PluginSettingTab {
         this.plugin = plugin;
     }
 
-    async display(): Promise<void> {
+    display() {
         const { containerEl } = this;
-
         containerEl.empty();
 
         const inputContainer = containerEl.createDiv({ cls: "inputContainer" });
+        const tagsSet = new Set<string>();
 
         const files = this.app.vault.getMarkdownFiles();
-        const tags: string[] = [];
-
         for (const file of files) {
-            const cache = await this.app.metadataCache.getCache(file.path);
-            if (cache && cache.tags) {
-                tags.push(...cache.tags.map(tag => tag.tag));
+            const cache = this.app.metadataCache.getCache(file.path);
+            if (cache) {
+                if (cache.tags) {
+                    cache.tags.forEach(tag => tagsSet.add(tag.tag));
+                }
+                if (cache.frontmatter) {
+                    const frontmatterTags = cache.frontmatter.tags;
+                    if (frontmatterTags) {
+                        if (Array.isArray(frontmatterTags)) {
+                            frontmatterTags.forEach(tag => tagsSet.add(tag));
+                        } else if (typeof frontmatterTags === 'string') {
+                            frontmatterTags.split(',').forEach(tag => tagsSet.add(tag.trim()));
+                        }
+                    }
+                }
+                if (cache.headings) {
+                    cache.headings.forEach(heading => {
+                        const inlineTags = heading.heading.match(/#[^\s#]+/g);
+                        if (inlineTags) {
+                            inlineTags.forEach(tag => tagsSet.add(tag));
+                        }
+                    });
+                }
             }
         }
+
+        const tags = Array.from(tagsSet);
 
         const tagNameTextComponent = new TextComponent(inputContainer);
         tagNameTextComponent.setPlaceholder('Tag name here').setValue('');
@@ -85,7 +100,9 @@ class ExampleSettingTab extends PluginSettingTab {
             const value = tagNameTextComponent.getValue();
             if (value.trim() !== '') {
                 new TagSuggestModal(this.app, tags, (suggestion) => {
-                    tagNameTextComponent.setValue(suggestion);
+                    this.plugin.settings.tags.push(suggestion);
+                    this.displayTags();
+                    this.plugin.saveSettings();
                 }).open();
             }
         });
