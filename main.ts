@@ -29,6 +29,8 @@ export default class examplePlugin extends Plugin {
     }
 }
 
+const renderTags = app.metadataCache.getTags();
+
 export class TagSuggester extends AbstractInputSuggest<string> {
     private inputEl: HTMLInputElement
 
@@ -38,15 +40,17 @@ export class TagSuggester extends AbstractInputSuggest<string> {
     }
 
     getSuggestions(inputStr: string): Array<string> {
-        return Object.keys(app.metadataCache.getTags());
+        return Object.keys(renderTags);
     }
 
     renderSuggestion(folder: string, el: HTMLElement): void {
         el.createDiv();
+        renderTags();
     }
 
     selectSuggestion(folder: string): void {
         this.inputEl.value = folder;
+        this.close();
     }
 }
 
@@ -86,6 +90,7 @@ class ExampleSettingTab extends PluginSettingTab {
 
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
+
     }
 
     displayTags() {
