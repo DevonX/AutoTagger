@@ -2,6 +2,11 @@ import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestM
 class ExamplePluginSettings {
     tags: string[] = [];
 }
+
+const allTags = (): string[] => {
+    const allTags: Set<string> = new Set(getAllTags(app.metadataCache as CachedMetadata));
+    return Array.from(allTags);
+}
 export default class examplePlugin extends Plugin {
     settings: ExamplePluginSettings;
 
@@ -29,7 +34,6 @@ export default class examplePlugin extends Plugin {
 class TagSuggestModal extends SuggestModal<string> {
     private suggestions: string[];
     private onSelect: (value: string) => void;
-    allTags: ExampleSettingTab;
     cachedMetadata: CachedMetadata;
 
     constructor(app: App, suggestions: string[], onSelect: (value: string) => void) {
@@ -38,8 +42,7 @@ class TagSuggestModal extends SuggestModal<string> {
         this.onSelect = onSelect;
     }
     getSuggestions(query: string): string[] {
-        const allTags = getAllTags(this.cachedMetadata);
-        if (allTags) {
+        if (Array.isArray(allTags)) {
             return allTags.filter(tag => tag.toLowerCase().includes(query.toLowerCase()));
         }
         return [];
@@ -66,9 +69,7 @@ class ExampleSettingTab extends PluginSettingTab {
     display() {
         const { containerEl } = this;
         containerEl.empty();
-
         const inputContainer = containerEl.createDiv({ cls: "inputContainer" });
-
 
         const tagNameTextComponent = new TextComponent(inputContainer);
         tagNameTextComponent
@@ -95,9 +96,7 @@ class ExampleSettingTab extends PluginSettingTab {
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
 
-        const allTags = getAllTags(this.cachedMetadata) || [];
-
-        const suggester = new TagSuggestModal(this.app, allTags, (tag) => {
+        const suggester = new TagSuggestModal(this.app, [], (tag) => {
             this.plugin.settings.tags.push(tag);
             this.displayTags();
             this.plugin.saveSettings();
