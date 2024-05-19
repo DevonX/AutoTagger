@@ -29,7 +29,7 @@ export default class examplePlugin extends Plugin {
     }
 }
 
-const renderTags = app.metadataCache.getTags();
+const getAllTags = app.metadataCache.getTags();
 
 export class TagSuggester extends AbstractInputSuggest<string> {
     private inputEl: HTMLInputElement
@@ -39,13 +39,13 @@ export class TagSuggester extends AbstractInputSuggest<string> {
         this.inputEl = inputEl;
     }
 
-    getSuggestions(inputStr: string): Array<string> {
-        return Object.keys(renderTags);
+    getSuggestions(): Array<string> {
+        return Object.keys(getAllTags);
     }
 
-    renderSuggestion(folder: string, el: HTMLElement): void {
+    renderSuggestion(renderTags: string, el: HTMLElement): void {
         el.createDiv();
-        renderTags();
+        renderTags= getAllTags;
     }
 
     selectSuggestion(folder: string): void {
