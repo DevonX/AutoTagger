@@ -1,4 +1,4 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, PopoverSuggest, AbstractInputSuggest, Scope} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, PopoverSuggest, Scope} from 'obsidian';
 
 class ExamplePluginSettings {
     tags: string[] = [];
