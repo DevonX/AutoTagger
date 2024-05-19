@@ -1,4 +1,4 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal, getAllTags} from 'obsidian';
 class ExamplePluginSettings {
     tags: string[] = [];
 }
@@ -29,6 +29,7 @@ export default class examplePlugin extends Plugin {
 class TagSuggestModal extends SuggestModal<string> {
     private suggestions: string[];
     private onSelect: (value: string) => void;
+    allTags: ExampleSettingTab;
 
     constructor(app: App, suggestions: string[], onSelect: (value: string) => void) {
         super(app);
@@ -36,7 +37,12 @@ class TagSuggestModal extends SuggestModal<string> {
         this.onSelect = onSelect;
     }
     getSuggestions(query: string): string[] {
-        return this.suggestions.filter(tag => tag.toLowerCase().includes(query.toLowerCase()));
+        const cache = this.app.metadataCache.getCache('') || { tags: [] };
+        const allTags = getAllTags(cache);
+        if (allTags) {
+            return allTags.filter(tag => tag.toLowerCase().includes(query.toLowerCase()));
+        }
+        return [];
     }
 
     renderSuggestion(suggestion: string, el: HTMLElement): void {
@@ -61,51 +67,10 @@ class ExampleSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         const inputContainer = containerEl.createDiv({ cls: "inputContainer" });
-        const tagsSet = new Set<string>();
 
-        const files = this.app.vault.getMarkdownFiles();
-        for (const file of files) {
-            const cache = this.app.metadataCache.getCache(file.path);
-            if (cache) {
-                if (cache.tags) {
-                    cache.tags.forEach(tag => tagsSet.add(tag.tag));
-                }
-                if (cache.frontmatter) {
-                    const frontmatterTags = cache.frontmatter.tags;
-                    if (frontmatterTags) {
-                        if (Array.isArray(frontmatterTags)) {
-                            frontmatterTags.forEach(tag => tagsSet.add(tag));
-                        } else if (typeof frontmatterTags === 'string') {
-                            frontmatterTags.split(',').forEach(tag => tagsSet.add(tag.trim()));
-                        }
-                    }
-                }
-                if (cache.headings) {
-                    cache.headings.forEach(heading => {
-                        const inlineTags = heading.heading.match(/#[^\s#]+/g);
-                        if (inlineTags) {
-                            inlineTags.forEach(tag => tagsSet.add(tag));
-                        }
-                    });
-                }
-            }
-        }
-
-        const tags = Array.from(tagsSet);
 
         const tagNameTextComponent = new TextComponent(inputContainer);
         tagNameTextComponent.setPlaceholder('Tag name here').setValue('');
-
-        tagNameTextComponent.inputEl.addEventListener('input', () => {
-            const value = tagNameTextComponent.getValue();
-            if (value.trim() !== '') {
-                new TagSuggestModal(this.app, tags, (suggestion) => {
-                    this.plugin.settings.tags.push(suggestion);
-                    this.displayTags();
-                    this.plugin.saveSettings();
-                }).open();
-            }
-        });
 
         new ButtonComponent(inputContainer)
             .setButtonText('Add Tag')
@@ -122,6 +87,15 @@ class ExampleSettingTab extends PluginSettingTab {
 
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
+
+        const cache = this.app.metadataCache.getCache('') || { tags: [] };
+        const allTags = getAllTags(cache) || []; // Provide a default empty array if getAllTags returns null
+
+        new TagSuggestModal(this.app, allTags, (tag) => {
+            this.plugin.settings.tags.push(tag);
+            this.displayTags();
+            this.plugin.saveSettings();
+        });
     }
 
     displayTags() {
