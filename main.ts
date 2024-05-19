@@ -1,4 +1,4 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, PopoverSuggest, Scope} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, AbstractInputSuggest, Setting} from 'obsidian';
 
 class ExamplePluginSettings {
     tags: string[] = [];
@@ -29,21 +29,24 @@ export default class examplePlugin extends Plugin {
     }
 }
 
-abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
-    app: App;
-    limit: 10;
-    scope: Scope;
+export class TagSuggester extends AbstractInputSuggest<string> {
+    private inputEl: HTMLInputElement
 
-    onSelect: (value: T, evt: MouseEvent | KeyboardEvent) => void;
+    constructor(app: App, inputEl: HTMLInputElement) {
+        super(app, inputEl);
+        this.inputEl = inputEl;
+    }
 
-    abstract getSuggestions(query: string): T[];
+    getSuggestions(inputStr: string): Array<string> {
+        return Object.keys(app.metadataCache.getTags());
+    }
 
-    renderSuggestion(value: T, el: HTMLElement): void {
+    renderSuggestion(folder: string, el: HTMLElement): void {
         el.createDiv();
     }
 
-    onChooseSuggestion(callback: (value: T, evt: MouseEvent | KeyboardEvent) => void): void {
-        this.onSelect = callback;
+    selectSuggestion(folder: string): void {
+        this.inputEl.value = folder;
     }
 }
 
@@ -59,29 +62,17 @@ class ExampleSettingTab extends PluginSettingTab {
 
     display() {
         const { containerEl } = this;
+        // Clear the container
         containerEl.empty();
         const containerElement = containerEl.createDiv({ cls: "inputContainer" });
 
         const tagNameTextComponent = new TextComponent(containerElement);
 
-        const suggester = new (class extends AbstractInputSuggest<string> {
-            getSuggestions(query: string): string[] {
-                const tags = Object.keys(app.metadataCache.getTags()); // Convert keys to array
-                return tags.filter(tag => tag.includes(query)); // Filter based on the query
-            }
-            selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
-                this.onSelect(value, evt);
-            }
-        })(this.app);
-
-        tagNameTextComponent
-            .setPlaceholder('Tag name here')
-            .setValue('')
-            .onChange(() => {
-                suggester.open();
-            });
+        new Setting(containerElement).addSearch(search => {
+            new TagSuggester(this.app, tagNameTextComponent.inputEl);
+        });
             
-        new ButtonComponent(containerElement)
+/*         new ButtonComponent(containerElement)
             .setButtonText('Add Tag')
             .onClick(() => {
                 const tagNameInputValue = tagNameTextComponent.getValue();
@@ -91,18 +82,11 @@ class ExampleSettingTab extends PluginSettingTab {
                     this.displayTags();
                     this.plugin.saveSettings();
                 }
-            });
+            }); */
 
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
     }
-
-        /* const suggester = new TagSuggestModal(this.app, [], (tag) => {
-            this.plugin.settings.tags.push(tag);
-            this.displayTags();
-            this.plugin.saveSettings();
-        }); */
-
 
     displayTags() {
         this.tagList.empty();
