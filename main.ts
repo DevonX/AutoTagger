@@ -29,7 +29,7 @@ export default class examplePlugin extends Plugin {
     }
 }
 
-abstract class AbstractInputSuggest<T extends { toString(): string }> extends PopoverSuggest<T> {
+abstract class AbstractInputSuggest<T> extends PopoverSuggest<T> {
     app: App;
     limit: 10;
     scope: Scope;
@@ -39,7 +39,7 @@ abstract class AbstractInputSuggest<T extends { toString(): string }> extends Po
     abstract getSuggestions(query: string): T[];
 
     renderSuggestion(value: T, el: HTMLElement): void {
-        el.createEl("div", { text: value.toString() });
+        el.createDiv();
     }
 
     onChooseSuggestion(callback: (value: T, evt: MouseEvent | KeyboardEvent) => void): void {
