@@ -1,11 +1,6 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal, getAllTags, CachedMetadata} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal, CachedMetadata} from 'obsidian';
 class ExamplePluginSettings {
     tags: string[] = [];
-}
-
-const allTags = (): string[] => {
-    const allTags: Set<string> = new Set(getAllTags(app.metadataCache as CachedMetadata));
-    return Array.from(allTags);
 }
 export default class examplePlugin extends Plugin {
     settings: ExamplePluginSettings;
@@ -42,12 +37,10 @@ class TagSuggestModal extends SuggestModal<string> {
         this.onSelect = onSelect;
     }
     getSuggestions(query: string): string[] {
-        if (Array.isArray(allTags)) {
-            return allTags.filter(tag => tag.toLowerCase().includes(query.toLowerCase()));
-        }
-        return [];
+        const tags = Object.keys(app.metadataCache.getTags()); // Convert keys to array
+        return tags.filter(tag => tag.includes(query)); // Filter based on the query
     }
-
+    
     renderSuggestion(suggestion: string, el: HTMLElement): void {
         el.createEl("div", { text: suggestion });
     }
@@ -90,7 +83,6 @@ class ExampleSettingTab extends PluginSettingTab {
                     this.displayTags();
                     this.plugin.saveSettings();
                 }
-
             });
 
         this.tagList = containerEl.createEl('ul');
@@ -117,7 +109,10 @@ class ExampleSettingTab extends PluginSettingTab {
             new ButtonComponent(deleteButton)
                 .setButtonText('Delete')
                 .onClick(() => {
-                    this.plugin.settings.tags = this.plugin.settings.tags.filter(t => t !== tag);
+                    const index = this.plugin.settings.tags.indexOf(tag);
+                    if (index > -1) {
+                        this.plugin.settings.tags.splice(index, 1);
+                    }
                     this.displayTags();
                     this.plugin.saveSettings();
                 });
