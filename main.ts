@@ -12,7 +12,7 @@ export default class examplePlugin extends Plugin {
 
         // Add button to the app container
         const button = createEl("button", { cls: "your-button-css-class" });
-        const buttonSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
+        const buttonSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hash"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>';
         button.innerHTML = buttonSVG;
         button.onclick = () => {
             console.log("BUTTON CLICKED");
@@ -40,11 +40,9 @@ class TagSuggestModal extends SuggestModal<string> {
         const tags = Object.keys(app.metadataCache.getTags()); // Convert keys to array
         return tags.filter(tag => tag.includes(query)); // Filter based on the query
     }
-    
     renderSuggestion(suggestion: string, el: HTMLElement): void {
         el.createEl("div", { text: suggestion });
     }
-
     onChooseSuggestion(suggestion: string, evt: MouseEvent | KeyboardEvent): void {
         this.onSelect(suggestion);
     }
