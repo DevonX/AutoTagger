@@ -1,7 +1,9 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal, CachedMetadata} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, PopoverSuggest, AbstractInputSuggest, Scope} from 'obsidian';
+
 class ExamplePluginSettings {
     tags: string[] = [];
 }
+
 export default class examplePlugin extends Plugin {
     settings: ExamplePluginSettings;
 
@@ -26,27 +28,25 @@ export default class examplePlugin extends Plugin {
         await this.saveData(this.settings);
     }
 }
-class TagSuggestModal extends SuggestModal<string> {
-    private suggestions: string[];
-    private onSelect: (value: string) => void;
-    cachedMetadata: CachedMetadata;
 
-    constructor(app: App, suggestions: string[], onSelect: (value: string) => void) {
-        super(app);
-        this.suggestions = suggestions;
-        this.onSelect = onSelect;
+abstract class AbstractInputSuggest<T extends { toString(): string }> extends PopoverSuggest<T> {
+    app: App;
+    limit: 10;
+    scope: Scope;
+
+    onSelect: (value: T, evt: MouseEvent | KeyboardEvent) => void;
+
+    abstract getSuggestions(query: string): T[];
+
+    renderSuggestion(value: T, el: HTMLElement): void {
+        el.createEl("div", { text: value.toString() });
     }
-    getSuggestions(query: string): string[] {
-        const tags = Object.keys(app.metadataCache.getTags()); // Convert keys to array
-        return tags.filter(tag => tag.includes(query)); // Filter based on the query
-    }
-    renderSuggestion(suggestion: string, el: HTMLElement): void {
-        el.createEl("div", { text: suggestion });
-    }
-    onChooseSuggestion(suggestion: string, evt: MouseEvent | KeyboardEvent): void {
-        this.onSelect(suggestion);
+
+    onChooseSuggestion(callback: (value: T, evt: MouseEvent | KeyboardEvent) => void): void {
+        this.onSelect = callback;
     }
 }
+
 class ExampleSettingTab extends PluginSettingTab {
     plugin: examplePlugin;
     tagList: HTMLElement;
@@ -60,18 +60,28 @@ class ExampleSettingTab extends PluginSettingTab {
     display() {
         const { containerEl } = this;
         containerEl.empty();
-        const inputContainer = containerEl.createDiv({ cls: "inputContainer" });
+        const containerElement = containerEl.createDiv({ cls: "inputContainer" });
 
-        const tagNameTextComponent = new TextComponent(inputContainer);
+        const tagNameTextComponent = new TextComponent(containerElement);
+
+        const suggester = new (class extends AbstractInputSuggest<string> {
+            getSuggestions(query: string): string[] {
+                const tags = Object.keys(app.metadataCache.getTags()); // Convert keys to array
+                return tags.filter(tag => tag.includes(query)); // Filter based on the query
+            }
+            selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
+                this.onSelect(value, evt);
+            }
+        })(this.app);
+
         tagNameTextComponent
             .setPlaceholder('Tag name here')
             .setValue('')
             .onChange(() => {
                 suggester.open();
-            })
-            ;
-
-        new ButtonComponent(inputContainer)
+            });
+            
+        new ButtonComponent(containerElement)
             .setButtonText('Add Tag')
             .onClick(() => {
                 const tagNameInputValue = tagNameTextComponent.getValue();
@@ -85,13 +95,14 @@ class ExampleSettingTab extends PluginSettingTab {
 
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
+    }
 
-        const suggester = new TagSuggestModal(this.app, [], (tag) => {
+        /* const suggester = new TagSuggestModal(this.app, [], (tag) => {
             this.plugin.settings.tags.push(tag);
             this.displayTags();
             this.plugin.saveSettings();
-        });
-    }
+        }); */
+
 
     displayTags() {
         this.tagList.empty();
