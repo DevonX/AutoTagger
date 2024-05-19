@@ -1,4 +1,4 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal, getAllTags} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, SuggestModal, getAllTags, CachedMetadata} from 'obsidian';
 class ExamplePluginSettings {
     tags: string[] = [];
 }
@@ -30,6 +30,7 @@ class TagSuggestModal extends SuggestModal<string> {
     private suggestions: string[];
     private onSelect: (value: string) => void;
     allTags: ExampleSettingTab;
+    cachedMetadata: CachedMetadata;
 
     constructor(app: App, suggestions: string[], onSelect: (value: string) => void) {
         super(app);
@@ -37,8 +38,7 @@ class TagSuggestModal extends SuggestModal<string> {
         this.onSelect = onSelect;
     }
     getSuggestions(query: string): string[] {
-        const cache = this.app.metadataCache.getCache('') || { tags: [] };
-        const allTags = getAllTags(cache);
+        const allTags = getAllTags(this.cachedMetadata);
         if (allTags) {
             return allTags.filter(tag => tag.toLowerCase().includes(query.toLowerCase()));
         }
@@ -56,6 +56,7 @@ class TagSuggestModal extends SuggestModal<string> {
 class ExampleSettingTab extends PluginSettingTab {
     plugin: examplePlugin;
     tagList: HTMLElement;
+    cachedMetadata: CachedMetadata;
 
     constructor(app: App, plugin: examplePlugin) {
         super(app, plugin);
@@ -94,8 +95,7 @@ class ExampleSettingTab extends PluginSettingTab {
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
 
-        const cache = this.app.metadataCache.getCache('') || { tags: [] };
-        const allTags = getAllTags(cache) || []; // Provide a default empty array if getAllTags returns null
+        const allTags = getAllTags(this.cachedMetadata) || [];
 
         const suggester = new TagSuggestModal(this.app, allTags, (tag) => {
             this.plugin.settings.tags.push(tag);
