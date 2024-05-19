@@ -70,19 +70,25 @@ class ExampleSettingTab extends PluginSettingTab {
 
 
         const tagNameTextComponent = new TextComponent(inputContainer);
-        tagNameTextComponent.setPlaceholder('Tag name here').setValue('');
+        tagNameTextComponent
+            .setPlaceholder('Tag name here')
+            .setValue('')
+            .onChange(() => {
+                suggester.open();
+            })
+            ;
 
         new ButtonComponent(inputContainer)
             .setButtonText('Add Tag')
             .onClick(() => {
                 const tagNameInputValue = tagNameTextComponent.getValue();
-
                 if (tagNameInputValue) {
                     this.plugin.settings.tags.push(tagNameInputValue);
                     tagNameTextComponent.setValue('');
                     this.displayTags();
                     this.plugin.saveSettings();
                 }
+
             });
 
         this.tagList = containerEl.createEl('ul');
@@ -91,7 +97,7 @@ class ExampleSettingTab extends PluginSettingTab {
         const cache = this.app.metadataCache.getCache('') || { tags: [] };
         const allTags = getAllTags(cache) || []; // Provide a default empty array if getAllTags returns null
 
-        new TagSuggestModal(this.app, allTags, (tag) => {
+        const suggester = new TagSuggestModal(this.app, allTags, (tag) => {
             this.plugin.settings.tags.push(tag);
             this.displayTags();
             this.plugin.saveSettings();
