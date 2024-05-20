@@ -1,16 +1,14 @@
 .your-button-css-class {
-    /* Add your styles here */
     width: 70px;
     height: 70px;
     position: absolute;
     right: 0;
     bottom: 0;
     padding: var(--size-4-1);
-    background-color: yellow; /* Change the color to yellow */
-    margin-bottom: 40px; /* Add a margin of 20px to the bottom */
+    background-color: yellow;
+    margin-bottom: 40px;
     margin-right: 20px;
-    border-radius: 50%; /* Make the button round */
-    /* Add these lines to center the text */
+    border-radius: 50%;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -28,9 +26,7 @@
     align-items: center;
     position: relative;
     border-bottom: 1px solid;
-}
-.addButton {
-    margin-left: 10px;
+    padding-bottom: 20px;
 }
 .removeButton {
     position: absolute;
@@ -38,21 +34,4 @@
 }
 .listMargin {
     margin-top: 20px;
-}
-.suggestion-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 1;
-    background-color: #777;
-    list-style-type: none;
-    padding: 0;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-}
-.suggestion-item {
-    padding: 10px;
-    cursor: pointer;
-}
-.suggestion-item:hover {
-    background-color: #000;
 }

@@ -1,4 +1,4 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, AbstractInputSuggest} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, AbstractInputSuggest} from 'obsidian';
 
 class ExamplePluginSettings {
     tags: string[] = [];
@@ -61,7 +61,6 @@ export class TagSuggester extends AbstractInputSuggest<string> {
 class ExampleSettingTab extends PluginSettingTab {
     plugin: examplePlugin;
     tagList: HTMLElement;
-    cachedMetadata: CachedMetadata;
 
     constructor(app: App, plugin: examplePlugin) {
         super(app, plugin);
