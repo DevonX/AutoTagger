@@ -1,4 +1,4 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, AbstractInputSuggest, Setting} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, CachedMetadata, AbstractInputSuggest} from 'obsidian';
 
 class ExamplePluginSettings {
     tags: string[] = [];
@@ -29,8 +29,6 @@ export default class examplePlugin extends Plugin {
     }
 }
 
-const getAllTags = app.metadataCache.getTags();
-
 export class TagSuggester extends AbstractInputSuggest<string> {
     private inputEl: HTMLInputElement
 
@@ -39,17 +37,18 @@ export class TagSuggester extends AbstractInputSuggest<string> {
         this.inputEl = inputEl;
     }
 
-    getSuggestions(): Array<string> {
-        return Object.keys(getAllTags);
+    getSuggestions(input: string): Array<string> {
+        const getAllTags = this.app.metadataCache.getTags();
+        const filteredTags = Object.keys(getAllTags).filter((tag: string) => tag.toLowerCase().includes(input.toLowerCase()));
+        return filteredTags;
     }
 
-    renderSuggestion(renderTags: string, el: HTMLElement): void {
-        el.createDiv();
-        renderTags= getAllTags;
+    renderSuggestion(filteredTags: string, el: HTMLElement): void {
+        el.createSpan({text: filteredTags})
     }
 
-    selectSuggestion(folder: string): void {
-        this.inputEl.value = folder;
+    selectSuggestion(filteredTags: string): void {
+        this.inputEl.value = filteredTags;
         this.close();
     }
 }
@@ -68,52 +67,42 @@ class ExampleSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         // Clear the container
         containerEl.empty();
-        const containerElement = containerEl.createDiv({ cls: "inputContainer" });
 
+        const containerElement = containerEl.createDiv({ cls: "inputContainer" });
         const tagNameTextComponent = new TextComponent(containerElement);
 
-        new Setting(containerElement).addSearch(search => {
-            new TagSuggester(this.app, tagNameTextComponent.inputEl);
+        const tagSuggester = new TagSuggester(this.app, tagNameTextComponent.inputEl);
+        tagSuggester.onSelect(() => {
+            const tagNameInputValue = tagNameTextComponent.getValue();
+            if (tagNameInputValue) {
+                this.plugin.settings.tags.push(tagNameInputValue);
+                tagNameTextComponent.setValue('');
+                this.displayTags();
+                this.plugin.saveSettings();
+            }
         });
-            
-/*         new ButtonComponent(containerElement)
-            .setButtonText('Add Tag')
-            .onClick(() => {
-                const tagNameInputValue = tagNameTextComponent.getValue();
-                if (tagNameInputValue) {
-                    this.plugin.settings.tags.push(tagNameInputValue);
-                    tagNameTextComponent.setValue('');
-                    this.displayTags();
-                    this.plugin.saveSettings();
-                }
-            }); */
 
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
-
     }
 
     displayTags() {
         this.tagList.empty();
 
-        if (!this.plugin.settings.tags) {
-            this.plugin.settings.tags = [];
-        }
-
         this.plugin.settings.tags.forEach(tag => {
             const tagItem = this.tagList.createEl('li', { text: tag, cls: 'listMargin' });
             const deleteButton = tagItem.createEl('button', { cls: 'removeButton' });
 
-            new ButtonComponent(deleteButton)
-                .setButtonText('Delete')
-                .onClick(() => {
-                    const index = this.plugin.settings.tags.indexOf(tag);
+        new ButtonComponent(deleteButton)
+            .setButtonText('Delete')
+            .onClick(() => {
+                const index = this.plugin.settings.tags.indexOf(tag);
                     if (index > -1) {
                         this.plugin.settings.tags.splice(index, 1);
                     }
-                    this.displayTags();
-                    this.plugin.saveSettings();
-                });
+                this.displayTags();
+                this.plugin.saveSettings();
+            });
         });
     }
 }
