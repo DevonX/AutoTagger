@@ -45,11 +45,16 @@ export class TagSuggester extends AbstractInputSuggest<string> {
 
     renderSuggestion(filteredTags: string, el: HTMLElement): void {
         el.createSpan({text: filteredTags})
+        el.addEventListener('click', () => this.selectSuggestion(filteredTags));
     }
 
-    selectSuggestion(filteredTags: string): void {
-        this.inputEl.value = filteredTags;
+    selectSuggestion(filteredTag: string): void {
+        this.inputEl.value = filteredTag;
+        this.onTagSelected(filteredTag);
         this.close();
+    }
+    onTagSelected(tag: string): void {
+        // This method will be overridden in the ExampleSettingTab class
     }
 }
 
@@ -72,15 +77,14 @@ class ExampleSettingTab extends PluginSettingTab {
         const tagNameTextComponent = new TextComponent(containerElement);
 
         const tagSuggester = new TagSuggester(this.app, tagNameTextComponent.inputEl);
-        tagSuggester.onSelect(() => {
-            const tagNameInputValue = tagNameTextComponent.getValue();
-            if (tagNameInputValue) {
-                this.plugin.settings.tags.push(tagNameInputValue);
+        tagSuggester.onTagSelected = (tag: string) => {
+            if (tag) {
+                this.plugin.settings.tags.push(tag);
                 tagNameTextComponent.setValue('');
                 this.displayTags();
                 this.plugin.saveSettings();
             }
-        });
+        };
 
         this.tagList = containerEl.createEl('ul');
         this.displayTags();
