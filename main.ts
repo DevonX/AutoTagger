@@ -93,16 +93,15 @@ class ExampleSettingTab extends PluginSettingTab {
         this.tagList.empty();
 
         this.plugin.settings.tags.forEach(tag => {
-            const tagItem = this.tagList.createEl('li', { text: tag, cls: 'listMargin' });
-            const deleteButton = tagItem.createEl('button', { cls: 'removeButton' });
+            const metaButton = this.tagList.createDiv()
 
-        new ButtonComponent(deleteButton)
-            .setButtonText('Delete')
+        new ButtonComponent(metaButton) //newbutton
+            .setButtonText(tag)
             .onClick(() => {
                 const index = this.plugin.settings.tags.indexOf(tag);
-                    if (index > -1) {
-                        this.plugin.settings.tags.splice(index, 1);
-                    }
+                if (index > -1) {
+                    this.plugin.settings.tags.splice(index, 1);
+                }
                 this.displayTags();
                 this.plugin.saveSettings();
             });
