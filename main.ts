@@ -72,7 +72,10 @@ class ExampleSettingTab extends PluginSettingTab {
         // Clear the container
         containerEl.empty();
 
-        const containerElement = containerEl.createDiv({ cls: "inputContainer" });
+        this.tagList = containerEl.createDiv({ cls: "tagList" });
+        this.displayTags();
+
+        const containerElement = containerEl.createDiv({ cls: "inputContainerContainer" });
         const tagNameTextComponent = new TextComponent(containerElement);
 
         const tagSuggester = new TagSuggester(this.app, tagNameTextComponent.inputEl);
@@ -84,18 +87,15 @@ class ExampleSettingTab extends PluginSettingTab {
                 this.plugin.saveSettings();
             }
         };
-
-        this.tagList = containerEl.createEl('ul');
-        this.displayTags();
     }
 
     displayTags() {
         this.tagList.empty();
 
         this.plugin.settings.tags.forEach(tag => {
-            const metaButton = this.tagList.createDiv()
+            const metaButton = this.tagList.createDiv({ cls: "divBorder" })
 
-        new ButtonComponent(metaButton) //newbutton
+        new ButtonComponent(metaButton)
             .setButtonText(tag)
             .onClick(() => {
                 const index = this.plugin.settings.tags.indexOf(tag);

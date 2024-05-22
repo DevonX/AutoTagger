@@ -20,18 +20,29 @@
     width: var(--custom-button-plus-sign-size);
     height: var(--custom-button-plus-sign-size);
 }
-.inputContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+.inputContainerContainer {
     border-bottom: 1px solid;
     padding-bottom: 20px;
+    width: 100%;
 }
-.removeButton {
-    position: absolute;
-    right: calc(20px);
+.inputContainerContainer input {
+    width: 100% !important;
+    border-radius: 2em;
+    margin-top: 15px;
+}
+.divBorder {
+    border: 20px;
+    border-color: blueviolet;
+    max-width: fit-content;
+}.divBorder button {
+    border-radius: 2em;
+    margin: 2px;
 }
 .listMargin {
     margin-top: 20px;
+}
+.tagList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
 }
