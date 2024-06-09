@@ -1,4 +1,4 @@
-import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, AbstractInputSuggest} from 'obsidian';
+import { Plugin, App, PluginSettingTab, ButtonComponent, TextComponent, AbstractInputSuggest, Setting} from 'obsidian';
 //This interface is mandatory for the settings to work. Sets up the types for the settings.
 interface AutoTaggerSettings {
     dateFormat: string;
@@ -67,47 +67,63 @@ export class TagSuggester extends AbstractInputSuggest<string> {
         // This method will be overridden in the ExampleSettingTab class
     }
 }
+//creates a new class that displays tags
+class DisplayTags {
+    tags: string[];
+    plugin: AutotaggerPlugin;
+
+    constructor(tags: string[]) {
+        this.plugin.settings.tags = tags;
+    }
+}
 //This is the class where the settings tab is created. This is where the user can set the settings for the plugin.
 class AutotaggerSettingTab extends PluginSettingTab {
     plugin: AutotaggerPlugin;
     tagList: HTMLElement;
     containerEl: HTMLElement;
+    tags: DisplayTags;
   
     constructor(app: App, plugin: AutotaggerPlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }
     //This is where the settings are displayed to the user.
-    display() {
-        this.displayTags(this.containerEl);  
+    display(): void {
+        this.displayTags();  
     }
     //This is the button that adds a new chain.
     chainButton() {
-        new ButtonComponent(this.containerEl.createEl("div", {cls: "chainButton"})).setButtonText("New Chain").onClick(() => {
+        new ButtonComponent(this.containerEl
+            .createEl("div", {cls: "chainButton"}))
+            .setButtonText("New Chain")
+            .onClick(() => {
             console.log("Button Clicked");
-            const newContainer = this.createNewChainContainer();
-            this.plugin.settings.tags.push();
-            this.plugin.saveSettings();
-            this.displayTags(newContainer);
+            new Setting(this.containerEl).then(() => {
+                new DisplayTags(this.plugin.settings.tags);
+                this.plugin.settings.tags.push();
+                this.plugin.saveSettings();
+                this.displayTags();
+            });
         });
     }
     //This is the function that creates a new chain container.
     createNewChainContainer() {
         return this.containerEl.createDiv({ cls: "tagContainer" });
     }
-    //This is the function that displays the tags to the user.
-    displayTags(containerEl: HTMLElement) {       
-        containerEl.empty();
 
-        this.tagList = containerEl.createDiv({ cls: "tagList" });
-        const containerElement = containerEl.createDiv({ cls: "inputContainerContainer" });
+
+    //This is the function that displays the tags to the user.
+    displayTags(): void {      
+        this.containerEl.empty();
+        this.tagList = this.containerEl.createDiv({ cls: "tagList" });
+        const containerElement = this.containerEl.createDiv({ cls: "inputContainerContainer" });
         const tagNameTextComponent = new TextComponent(containerElement);
         //This is where the tag suggester is created
         const tagSuggester = new TagSuggester(this.app, tagNameTextComponent.inputEl);
         tagSuggester.onTagSelected = (tag: string) => {
             if (tag) {
                 tagNameTextComponent.setValue('');
-                this.displayTags(containerEl);
+                this.displayTags();
                 this.plugin.saveSettings();
                 //push the tag to the array
                 this.plugin.settings.tags.push(tag);
