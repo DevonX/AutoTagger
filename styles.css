@@ -31,12 +31,16 @@
     margin-top: 15px;
 }
 .divBorder {
-    border: 20px;
-    border-color: blueviolet;
     max-width: fit-content;
-}.divBorder button {
+}
+.divBorder button {
     border-radius: 2em;
     margin: 2px;
+    background-color: var(--pill-background);
+    color: var(--pill-color);
+    border: var(--pill-border-width) solid var(--pill-border-color);
+    border-radius: var(--pill-radius);
+    font-weight: var(--pill-weight);
 }
 .listMargin {
     margin-top: 20px;
@@ -45,4 +49,19 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
+}
+.borderTestClass {
+    border-radius: 2em;
+    margin: 2px;
+    background-color: var(--pill-background);
+    color: var(--pill-color);
+    border: var(--pill-border-width) solid var(--pill-border-color);
+    border-radius: var(--pill-radius);
+    font-weight: var(--pill-weight);
+    padding: var(--pill-padding-y) 0;
+    font-size: var(--font-ui-small);
+}
+.chainButton{
+    display: flex;
+    justify-content: center;
 }
